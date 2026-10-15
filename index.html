@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Bengkel virtual 3D Teknik Instalasi Tenaga Listrik: toolkit, praktikum instalasi dan kendali motor, kuis, refleksi.">
+<title>Bengkel Virtual TITL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: aplikasi multi-halaman — bilah navigasi atas, satu halaman tampil per menu; papan praktik 3D + panel instrumen di halaman praktikum. Kuning K3 satu-satunya aksen; warna kabel PUIL sebagai warna semantik */
+:root{
+  --bg:#eceff3; --surface:#ffffff; --surface-2:#e2e7ed; --ink:#15202b; --muted:#566475; --line:#cdd5de;
+  --accent:#e3a400; --accent-ink:#7a5700; --on-accent:#1b1500;
+  --fasa:#7b4a25; --netral:#1f5fbf; --pe:#2f8f46; --ok:#2f8f46; --warn:#b97500; --danger:#c3352a;
+  --panel:#1b2530; --panel-ink:#e7edf3; --lcd:#c9d6b4; --lcd-ink:#1d2a14;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f151c; --surface:#17202a; --surface-2:#1f2a36; --ink:#e5eaf0; --muted:#97a5b4; --line:#2c3947;
+  --accent:#f2b705; --accent-ink:#f5c842; --on-accent:#1b1500;
+  --fasa:#c58a5c; --netral:#6a9ee8; --pe:#56bf6e; --ok:#56bf6e; --warn:#f0a63a; --danger:#f0675b;
+  --panel:#0b1117; --panel-ink:#e7edf3; --lcd:#b9c9a2; --lcd-ink:#16210f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151c; --surface:#17202a; --surface-2:#1f2a36; --ink:#e5eaf0; --muted:#97a5b4; --line:#2c3947;
+  --accent:#f2b705; --accent-ink:#f5c842; --on-accent:#1b1500;
+  --fasa:#c58a5c; --netral:#6a9ee8; --pe:#56bf6e; --ok:#56bf6e; --warn:#f0a63a; --danger:#f0675b;
+  --panel:#0b1117; --panel-ink:#e7edf3; --lcd:#b9c9a2; --lcd-ink:#16210f; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+code{font-family:var(--f-mono);font-size:.92em}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.08;margin:0;text-wrap:balance;letter-spacing:.01em}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:clamp(16px,3vw,28px)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.small{font-size:13.5px}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:14px;min-height:58px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;flex:none}
+.brand-mark{width:32px;height:32px;border-radius:8px;background:var(--accent);display:grid;place-items:center}
+.brand b{font-family:var(--f-display);font-size:21px;letter-spacing:.02em;display:block;line-height:1}
+.brand small{display:block;font-size:10.5px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.08em}
+.nav-links{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;min-width:0}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-weight:600;font-size:14.5px;padding:7px 10px;border-radius:6px;white-space:nowrap}
+.nav-links a:hover{color:var(--ink);background:var(--surface-2)}
+.nav-links a[aria-current="page"]{color:var(--ink);background:var(--surface-2);box-shadow:inset 0 -2px 0 var(--accent)}
+.nav-links a.guru{color:var(--accent-ink)}
+.who{display:flex;align-items:center;gap:8px;flex:none;font-size:13.5px}
+.who .av{width:30px;height:30px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;font-weight:700;font-family:var(--f-display);font-size:15px;border:1px solid var(--line)}
+.who .nm{max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;line-height:1.15}
+.who .nm small{display:block;color:var(--muted);font-weight:400;font-size:11.5px}
+.menu-btn{display:none}
+@media (max-width:900px){
+  .nav .wrap{flex-wrap:wrap;padding-block:6px}
+  .nav-links{order:3;flex-basis:100%}
+  .who .nm{display:none}
+}
+.status{font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--warn) 12%,var(--bg))}
+.status.ok{background:color-mix(in srgb,var(--ok) 10%,var(--bg))}
+
+/* page */
+.page{padding-block:32px 64px}
+.page-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.page-head h1{font-size:clamp(34px,4.5vw,52px);text-transform:uppercase;font-weight:700}
+.page-head p{max-width:66ch;color:var(--muted);margin-top:8px}
+.pill{font-family:var(--f-mono);font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);white-space:nowrap}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);padding:9px 16px;border-radius:8px;font-weight:600;cursor:pointer;text-decoration:none;font-size:15px;transition:background .15s,border-color .15s,transform .1s;color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.danger{border-color:var(--danger);color:var(--danger)}
+.btn.sm{padding:6px 11px;font-size:13.5px}
+.btn.xs{padding:3px 8px;font-size:12.5px;border-radius:6px}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.card h3{font-size:21px;text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.field{display:grid;gap:4px;font-size:13px;color:var(--muted);font-weight:600;min-width:0}
+.field select,.field input,.field textarea{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px 10px;color:var(--ink);font-weight:400;font-size:15px;width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.badge{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+.badge.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.badge.warn{color:var(--warn)}
+.badge.bad{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
+@media (max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* login */
+.login{display:grid;grid-template-columns:1.1fr 1fr;gap:32px;align-items:center;min-height:calc(100vh - 200px)}
+.login h1{font-size:clamp(42px,6vw,76px);text-transform:uppercase;font-weight:700}
+.login h1 span{color:var(--accent-ink)}
+.login .lead{font-size:18px;color:var(--muted);margin-top:14px;max-width:56ch}
+.login-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:grid;gap:14px}
+.login-card h2{font-size:28px;text-transform:uppercase}
+.guru-card{border-top:4px solid var(--accent)}
+.err{color:var(--danger);font-size:13.5px;min-height:1.2em}
+@media (max-width:860px){.login{grid-template-columns:1fr;min-height:0}}
+
+/* beranda */
+.prinsip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.prinsip .card .tag{font-family:var(--f-display);font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
+.prinsip .card p{font-size:15px;color:var(--muted);margin-top:6px}
+.alur{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface);margin-top:16px}
+.alur a{padding:16px 18px;text-decoration:none;color:inherit;border-right:1px solid var(--line);display:grid;gap:6px}
+.alur a:last-child{border-right:0}
+.alur a:hover{background:var(--surface-2)}
+.alur .n{font-family:var(--f-mono);font-size:12px;color:var(--accent-ink)}
+.alur b{font-family:var(--f-display);font-size:24px;text-transform:uppercase}
+.alur small{color:var(--muted);font-size:14px}
+.bar{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+.score-big{font-family:var(--f-display);font-size:64px;font-weight:700;line-height:1}
+@media (max-width:860px){.prinsip,.alur{grid-template-columns:1fr}.alur a{border-right:0;border-bottom:1px solid var(--line)}}
+
+/* toolkit */
+.tk{display:grid;grid-template-columns:250px minmax(0,1fr) 360px;gap:16px;align-items:start}
+.tk-list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;display:grid;gap:10px;max-height:680px;overflow:auto}
+.search{width:100%;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--bg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:3px 10px;font-size:12.5px;cursor:pointer;font-weight:600;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tool-items{display:grid;gap:2px}
+.tool-item{display:grid;grid-template-columns:8px 1fr auto;gap:10px;align-items:center;padding:8px 9px;border-radius:7px;cursor:pointer;border:1px solid transparent;background:none;text-align:left;width:100%}
+.tool-item:hover{background:var(--surface-2)}
+.tool-item[aria-current="true"]{background:var(--surface-2);border-color:var(--line)}
+.tool-item .dot{width:8px;height:8px;border-radius:50%}
+.tool-item .nm{font-weight:600;font-size:14.5px;line-height:1.25}
+.tool-item .ct{display:block;font-size:11.5px;color:var(--muted);font-family:var(--f-mono)}
+.tool-item .done{font-size:12px;color:var(--ok);font-weight:700}
+.viewer{position:relative;background:radial-gradient(120% 90% at 50% 20%,var(--surface) 0%,var(--surface-2) 100%);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-width:0}
+.viewer canvas{display:block;width:100%;height:580px;cursor:grab;touch-action:none}
+.viewer-title{position:absolute;left:16px;top:14px;pointer-events:none;right:16px}
+.viewer-title h2{font-size:30px;text-transform:uppercase}
+.viewer-title .en{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.viewer-bar{position:absolute;left:12px;right:12px;bottom:12px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.hint{font-size:12.5px;color:var(--muted);background:color-mix(in srgb,var(--surface) 85%,transparent);padding:5px 9px;border-radius:6px;border:1px solid var(--line)}
+.part-layer{position:absolute;inset:0;pointer-events:none}
+.part-tag{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;white-space:nowrap;background:var(--panel);color:var(--panel-ink);padding:3px 8px 3px 4px;border-radius:999px;border:0;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.part-tag i{width:18px;height:18px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-style:normal;font-size:11px;font-family:var(--f-mono)}
+.part-tag.on{outline:2px solid var(--accent)}
+.detail{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:16px;min-width:0}
+.detail h4{font-size:15px;text-transform:uppercase;letter-spacing:.08em}
+.detail p,.detail li{font-size:15px}
+.detail ol,.detail ul{margin:6px 0 0;padding-left:20px;display:grid;gap:4px}
+.parts-list{list-style:none!important;padding:0!important}
+.parts-list li{display:grid;grid-template-columns:22px 1fr;gap:8px;cursor:pointer;padding:4px 6px;border-radius:6px}
+.parts-list li:hover,.parts-list li.on{background:var(--surface-2)}
+.parts-list li i{width:20px;height:20px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-style:normal;font-size:11px;font-family:var(--f-mono);font-weight:700}
+.parts-list li small{display:block;color:var(--muted);font-size:13.5px}
+.k3box{background:color-mix(in srgb,var(--danger) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--danger) 35%,var(--line));border-radius:8px;padding:12px 14px}
+.k3box h4{color:var(--danger)}
+.pemantik{border-left:4px solid var(--accent);padding:8px 12px;background:var(--surface-2);border-radius:0 8px 8px 0}
+.pemantik h4{font-size:13px;color:var(--accent-ink)}
+.pemantik p{font-style:italic}
+@media (max-width:1150px){.tk{grid-template-columns:240px minmax(0,1fr)}.detail{grid-column:1/-1}}
+@media (max-width:760px){.tk{grid-template-columns:1fr}.tk-list{max-height:260px}.viewer canvas{height:400px}}
+
+/* praktikum list */
+.prak-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.prak-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:10px;text-decoration:none;color:inherit;align-content:start;transition:border-color .15s,transform .15s}
+.prak-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.prak-card .no{font-family:var(--f-mono);font-size:12px;color:var(--accent-ink)}
+.prak-card h3{font-size:26px;text-transform:uppercase}
+.prak-card p{font-size:15px;color:var(--muted)}
+.prak-card .meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+
+/* lab */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;align-items:start}
+.lab-stage{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:linear-gradient(180deg,var(--surface-2),var(--bg))}
+.lab-stage canvas{display:block;width:100%;height:620px;touch-action:none}
+.meters{position:absolute;left:12px;top:12px;right:12px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}
+.meter{background:var(--panel);color:var(--panel-ink);border-radius:7px;padding:6px 10px;min-width:96px}
+.meter small{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.65}
+.meter b{font-family:var(--f-mono);font-size:17px;font-variant-numeric:tabular-nums}
+.meter.trip b{color:#ff7a6e}.meter.on b{color:#7fe08f}
+.heat{position:absolute;left:12px;bottom:12px;background:var(--panel);color:var(--panel-ink);padding:8px 11px;border-radius:7px;width:210px;pointer-events:none}
+.heat small{font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;opacity:.7;text-transform:uppercase}
+.heat .hb{height:6px;background:#2b3846;border-radius:3px;margin-top:5px;overflow:hidden}
+.heat .hb i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f2b705,#ff5a3c)}
+.sel-hint{position:absolute;right:12px;bottom:12px;background:var(--panel);color:var(--panel-ink);padding:8px 11px;border-radius:7px;font-size:13px;max-width:280px;pointer-events:none}
+.toast{position:absolute;left:50%;top:64px;transform:translateX(-50%);background:var(--danger);color:#fff;padding:9px 16px;border-radius:8px;font-weight:700;font-size:14.5px;max-width:90%;text-align:center;opacity:0;transition:opacity .25s;pointer-events:none;z-index:3}
+.toast.show{opacity:1}.toast.good{background:var(--ok)}
+.side{display:grid;gap:12px}
+.tabs{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:10px}
+.tabs button{flex:1;border:0;background:transparent;padding:7px 4px;font-weight:600;font-size:13.5px;cursor:pointer;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.readout{background:var(--panel);border-radius:8px;padding:12px;display:grid;gap:6px}
+.lcd{background:var(--lcd);color:var(--lcd-ink);font-family:var(--f-mono);font-weight:700;font-size:32px;text-align:right;padding:6px 12px;border-radius:5px;font-variant-numeric:tabular-nums;letter-spacing:.04em;box-shadow:inset 0 2px 6px rgba(0,0,0,.25)}
+.lcd small{font-size:15px;margin-left:6px}
+.readout p{color:var(--panel-ink);font-size:13px;opacity:.88}
+.neon{display:flex;align-items:center;gap:10px;color:var(--panel-ink);font-weight:600}
+.neon i{width:22px;height:22px;border-radius:50%;background:#3a2a24;border:2px solid #594036;flex:none}
+.neon.lit i{background:#ff6a3d;box-shadow:0 0 14px 4px rgba(255,106,61,.7)}
+.missions{list-style:none;margin:0;padding:0;display:grid;gap:7px;counter-reset:m}
+.missions li{display:grid;grid-template-columns:24px 1fr;gap:8px;font-size:14px;align-items:start;counter-increment:m}
+.missions li::before{content:counter(m);width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.missions li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+.missions li.done span{color:var(--muted)}
+.wirecol{display:flex;gap:6px}
+.wirecol button{flex:1;border:2px solid var(--line);border-radius:7px;padding:6px 4px;background:var(--bg);cursor:pointer;font-size:12.5px;font-weight:700;display:grid;gap:4px;justify-items:center}
+.wirecol button i{width:100%;height:6px;border-radius:3px;display:block}
+.wirecol button[aria-pressed="true"]{border-color:var(--accent);background:var(--surface-2)}
+.wire-list{display:grid;gap:4px;max-height:170px;overflow:auto;font-size:13px}
+.wire-list div{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:3px 4px;border-radius:5px}
+.wire-list div.sel{background:var(--surface-2)}
+.wire-list i{width:14px;height:5px;border-radius:2px;display:block}
+.check-list{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:5px;font-size:13.5px}
+.check-list li{display:grid;grid-template-columns:18px 1fr;gap:6px}
+.check-list .y{color:var(--ok);font-weight:700}.check-list .n{color:var(--danger);font-weight:700}
+.log{font-family:var(--f-mono);font-size:12px;max-height:140px;overflow:auto;display:grid;gap:3px;color:var(--muted)}
+.log b{color:var(--ink);font-weight:500}
+details.jobsheet summary{cursor:pointer;font-weight:700;font-size:15px}
+details.jobsheet ol,details.jobsheet ul{padding-left:20px;margin:8px 0 0;display:grid;gap:4px;font-size:14.5px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-top:10px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:22px;height:5px;border-radius:3px;display:inline-block}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;background:transparent;padding:7px;font-weight:600;font-size:13.5px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.switch{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;user-select:none}
+.switch input{width:38px;height:22px;appearance:none;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;position:relative;cursor:pointer;flex:none}
+.switch input::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:var(--muted);top:2px;left:2px;transition:left .15s}
+.switch input:checked::after{left:18px;background:var(--accent)}
+@media (max-width:1100px){.lab{grid-template-columns:1fr}.lab-stage canvas{height:500px}}
+@media (max-width:560px){.lab-stage canvas{height:420px}.heat{width:160px}.sel-hint{display:none}}
+
+/* kuis */
+.quiz-wrap{max-width:780px}
+.quiz-q h4{font-family:var(--f-body);font-size:18px;font-weight:700;line-height:1.35}
+.opts{display:grid;gap:7px;margin-top:12px}
+.opt{text-align:left;border:1px solid var(--line);background:var(--bg);padding:10px 13px;border-radius:8px;cursor:pointer;font-size:15.5px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
+.opt.wrong{border-color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,var(--surface))}
+.opt:disabled{cursor:default}
+.explain{font-size:15px;padding:10px 12px;background:var(--surface-2);border-radius:8px;margin-top:10px}
+.quiz-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+.qdots{display:flex;gap:4px;flex-wrap:wrap}
+.qdots i{width:10px;height:10px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line)}
+.qdots i.r{background:var(--ok);border-color:var(--ok)}
+.qdots i.w{background:var(--danger);border-color:var(--danger)}
+.qdots i.cur{outline:2px solid var(--accent);outline-offset:1px}
+
+/* tabel */
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table.tbl{width:100%;border-collapse:collapse;font-size:14.5px}
+.tbl th{text-align:left;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);font-weight:500;white-space:nowrap}
+.tbl th button{all:unset;cursor:pointer}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.tbl tbody tr.click{cursor:pointer}
+.tbl tbody tr.click:hover{background:var(--surface-2)}
+.tbl-actions{display:flex;gap:6px;justify-content:flex-end}
+.grade{display:inline-block;min-width:44px;text-align:center;font-weight:700;border-radius:5px;padding:1px 6px}
+.grade.a{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.grade.b{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--accent-ink)}
+.grade.c{background:color-mix(in srgb,var(--danger) 15%,transparent);color:var(--danger)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat small{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font-family:var(--f-display);font-size:34px;line-height:1.1}
+@media (max-width:760px){.stats{grid-template-columns:1fr 1fr}}
+
+/* dialog */
+.dialog-back{position:fixed;inset:0;background:rgba(10,15,20,.55);z-index:60;display:grid;place-items:center;padding:16px}
+.dialog{background:var(--surface);border:1px solid var(--line);border-radius:12px;width:min(760px,100%);max-height:92vh;overflow:auto;padding:22px;display:grid;gap:14px}
+.dialog h3{font-size:28px;text-transform:uppercase}
+.dialog textarea{min-height:80px;resize:vertical}
+textarea.io{width:100%;min-height:140px;font-family:var(--f-mono);font-size:12px}
+
+/* tentang & k3 */
+.hazard{height:12px;background:repeating-linear-gradient(-45deg,var(--accent) 0 18px,var(--ink) 18px 36px);border-radius:3px}
+.k3-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.k3-step{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:6px;align-content:start}
+.k3-step .n{font-family:var(--f-mono);font-size:12px;color:var(--accent-ink)}
+.k3-step b{font-family:var(--f-display);font-size:22px;text-transform:uppercase}
+.k3-step p{font-size:14.5px;color:var(--muted)}
+.idn dl{display:grid;grid-template-columns:170px 1fr;gap:9px 14px;margin:0;font-size:15px}
+.idn dt{color:var(--muted);font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding-top:3px}
+.idn dd{margin:0;font-weight:600}
+.keung{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.keung li{display:grid;grid-template-columns:56px 1fr;gap:12px;font-size:15px}
+.keung li b{font-family:var(--f-mono);font-size:12px;color:var(--accent-ink);padding-top:3px}
+@media (max-width:900px){.k3-grid{grid-template-columns:1fr 1fr}.idn dl{grid-template-columns:1fr}}
+@media (max-width:520px){.k3-grid{grid-template-columns:1fr}}
+footer{padding-block:24px;color:var(--muted);font-size:13.5px;border-top:1px solid var(--line)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Navigasi utama">
+  <div class="wrap">
+    <a class="brand" href="#beranda">
+      <span class="brand-mark" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="#1b1500"/></svg></span>
+      <span><b>EduKelistrikan</b><small>BENGKEL VIRTUAL TITL</small></span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#beranda" data-r="beranda">Beranda</a>
+      <a href="#toolkit" data-r="toolkit">Toolkit 3D</a>
+      <a href="#praktikum" data-r="praktikum">Praktikum</a>
+      <a href="#kuis" data-r="kuis">Kuis</a>
+      <a href="#refleksi" data-r="refleksi">Refleksi</a>
+      <a href="#k3" data-r="k3">K3</a>
+      <a href="#nilai" data-r="nilai" class="guru" hidden>Nilai Siswa</a>
+      <a href="#materi" data-r="materi" class="guru" hidden>Kelola Materi</a>
+      <a href="#tentang" data-r="tentang">Tentang</a>
+    </div>
+    <select class="search" id="faseSel" hidden aria-label="Fase yang ditampilkan" style="width:auto;padding:5px 8px;font-size:13px;font-weight:600"><option value="E">Fase E</option><option value="F">Fase F</option></select>
+    <div class="who" id="who" hidden>
+      <span class="av" id="whoAv">?</span>
+      <span class="nm" id="whoNm"></span>
+      <button class="btn xs" id="bOut">Keluar</button>
+    </div>
+  </div>
+</nav>
+<div class="status" id="status" hidden><div class="wrap" id="statusTxt"></div></div>
+
+<main>
+<!-- MASUK -->
+<section class="page" id="page-masuk" hidden>
+  <div class="wrap login">
+    <div>
+      <p class="eyebrow">SMK · Teknik Instalasi Tenaga Listrik · Fase E &amp; F</p>
+      <h1 style="margin-top:10px">Pegang alatnya, <span>rasakan arusnya</span>, pahami bahayanya.</h1>
+      <p class="lead">Bengkel virtual berbasis Pembelajaran Mendalam. Masuk dengan namamu agar guru dapat melihat kemajuan belajar, nilai praktikum, dan hasil kuismu.</p>
+    </div>
+    <div class="login-card">
+      <div class="seg" role="group" aria-label="Pilih cara masuk">
+        <button type="button" id="tabMasuk" aria-pressed="true">Masuk siswa</button>
+        <button type="button" id="tabDaftar" aria-pressed="false">Daftar siswa</button>
+        <button type="button" id="tabGuru" aria-pressed="false">Guru</button>
+      </div>
+      <form id="fMasuk" style="display:grid;gap:12px">
+        <h2>Masuk Siswa</h2>
+        <label class="field">NIS (nomor induk siswa)<input id="inNisL" inputmode="numeric" autocomplete="username" required placeholder="contoh: 2425101"></label>
+        <label class="field">Kata sandi<input id="inPwL" type="password" autocomplete="current-password" required></label>
+        <p class="err" id="errMasuk"></p>
+        <button class="btn primary" type="submit">Masuk</button>
+        <p class="muted small">Belum punya akun? Pilih <b>Daftar siswa</b>. Lupa kata sandi? Minta guru mengatur ulang di Supabase.</p>
+      </form>
+      <form id="fDaftar" style="display:grid;gap:12px" hidden>
+        <h2>Daftar Siswa</h2>
+        <label class="field">Nama lengkap<input id="inNama" autocomplete="name" required minlength="3" maxlength="60" placeholder="contoh: Andi Saputra"></label>
+        <label class="field">Fase pembelajaran<select id="inFase"><option value="E">Fase E · Kelas X (instalasi penerangan)</option><option value="F">Fase F · Kelas XI–XII (kendali motor 3 fasa)</option></select></label>
+        <div class="grid2">
+          <label class="field">Kelas<input id="inKelas" required maxlength="20" placeholder="X TITL 1" list="kelasList"></label>
+          <label class="field">No. absen<input id="inAbsen" type="number" min="1" max="60" placeholder="12"></label>
+        </div>
+        <datalist id="kelasList"><option value="X TITL 1"><option value="X TITL 2"><option value="XI TITL 1"><option value="XI TITL 2"><option value="XII TITL 1"><option value="XII TITL 2"></datalist>
+        <label class="field">NIS (dipakai untuk masuk)<input id="inNis" inputmode="numeric" autocomplete="username" required maxlength="20"></label>
+        <div class="grid2">
+          <label class="field">Kata sandi (min. 6)<input id="inPw" type="password" autocomplete="new-password" required minlength="6"></label>
+          <label class="field">Ulangi kata sandi<input id="inPw2" type="password" autocomplete="new-password" required minlength="6"></label>
+        </div>
+        <p class="err" id="loginErr"></p>
+        <button class="btn primary" type="submit">Daftar &amp; mulai belajar</button>
+      </form>
+      <form id="fGuru" style="display:grid;gap:12px" hidden>
+        <h2>Masuk Guru</h2>
+        <label class="field">Email<input id="inEmailG" type="email" autocomplete="email" required></label>
+        <label class="field">Kata sandi<input id="inPwG" type="password" autocomplete="current-password" required></label>
+        <p class="err" id="errGuru"></p>
+        <button class="btn primary" type="submit">Masuk sebagai guru</button>
+        <p class="muted small">Akun guru dibuat di Supabase lalu didaftarkan ke tabel <code>guru</code>.</p>
+      </form>
+      <p class="muted small" id="loginNote"><span class="spin"></span> Menghubungkan ke database…</p>
+    </div>
+  </div>
+</section>
+
+<!-- BERANDA -->
+<section class="page" id="page-beranda" hidden><div class="wrap" id="berandaBody"></div></section>
+
+<!-- TOOLKIT -->
+<section class="page" id="page-toolkit" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <div><p class="eyebrow">Tahap 1 · Memahami</p><h1>Toolkit Kelistrikan 3D</h1><p>Putar alat dengan menyeret, perbesar dengan menggulir. Ketuk label bernomor untuk mengenali bagian-bagian alat, tekan <b>Peragakan</b> untuk melihat cara kerjanya, lalu tandai alat sebagai sudah dipelajari.</p></div>
+      <span class="pill" id="tkCount">0 / 0 alat dipelajari</span>
+    </div>
+    <div class="tk">
+      <aside class="tk-list" aria-label="Daftar alat">
+        <input class="search" id="tkSearch" type="search" placeholder="Cari alat…" aria-label="Cari alat">
+        <div class="chips" id="tkChips"></div>
+        <div class="tool-items" id="tkItems"></div>
+      </aside>
+      <div class="viewer">
+        <canvas id="tvCanvas" aria-label="Model 3D alat yang dipilih"></canvas>
+        <div class="part-layer" id="partLayer"></div>
+        <div class="viewer-title"><h2 id="tvName">—</h2><span class="en" id="tvEn"></span></div>
+        <div class="viewer-bar">
+          <span class="hint">Seret: putar · Gulir/cubit: zoom</span>
+          <span class="row">
+            <button class="btn sm" id="tvAnim">Peragakan</button>
+            <button class="btn sm" id="tvParts" aria-pressed="true">Label bagian</button>
+            <button class="btn sm" id="tvAuto" aria-pressed="false">Putar</button>
+            <button class="btn sm" id="tvReset">Atur ulang</button>
+          </span>
+        </div>
+      </div>
+      <article class="detail" id="tkDetail" aria-live="polite"></article>
+    </div>
+  </div>
+</section>
+
+<!-- PRAKTIKUM LIST -->
+<section class="page" id="page-praktikum" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <div><p class="eyebrow" id="prakEyebrow">Tahap 2 · Mengaplikasi</p><h1>Praktikum</h1><p>Lembar kerja berjenjang sesuai fasemu. Pada tiap praktikum kamu merangkai kabel sendiri di papan 3D, memeriksa rangkaian, lalu mengukur dan menyelesaikan misinya. Nilai dihitung dari misi yang tercapai dan dikurangi 5 poin untuk setiap pelanggaran K3.</p></div>
+      <span class="pill" id="prakAvg">Rata-rata nilai: –</span>
+    </div>
+    <div class="prak-grid" id="prakGrid"></div>
+  </div>
+</section>
+
+<!-- LAB -->
+<section class="page" id="page-lab" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <div><p class="eyebrow" id="labEyebrow">Praktikum</p><h1 id="labTitle">—</h1><p id="labDesc"></p></div>
+      <div class="row"><span class="pill" id="labScore">Nilai: 0</span><a class="btn sm" href="#praktikum">Daftar praktikum</a></div>
+    </div>
+    <div class="lab">
+      <div style="min-width:0">
+        <div class="lab-stage">
+          <canvas id="labCanvas" aria-label="Papan praktik instalasi 3D"></canvas>
+          <div class="meters">
+            <div class="meter" id="mtMcb"><small>MCB</small><b id="mvMcb">OFF</b></div>
+            <div class="meter"><small>Tegangan</small><b id="mvV">0 V</b></div>
+            <div class="meter"><small>Arus total</small><b id="mvI">0,00 A</b></div>
+            <div class="meter"><small>Daya</small><b id="mvP">0 W</b></div>
+            <div class="meter"><small>Pelanggaran K3</small><b id="mvViol">0</b></div>
+          </div>
+          <div class="heat"><small id="heatLbl">Bimetal MCB (beban lebih)</small><div class="hb"><i id="heatBar"></i></div></div>
+          <div class="sel-hint" id="selHint">Klik terminal pertama, lalu terminal kedua untuk memasang kabel.</div>
+          <div class="toast" id="toast" role="status"></div>
+        </div>
+        <div class="legend">
+          <span><i style="background:#6b3d1d"></i>Fasa (L) coklat</span>
+          <span><i style="background:#2463c9"></i>Netral (N) biru</span>
+          <span><i style="background:repeating-linear-gradient(90deg,#2e9a46 0 6px,#e8c51a 6px 12px)"></i>PE hijau-kuning</span>
+          <span><i style="background:#f2b705;width:8px;height:8px;border-radius:50%"></i>Aliran arus</span>
+          <span id="legendF" hidden><i style="background:linear-gradient(90deg,#6b3d1d 33%,#1d2126 33% 66%,#8f969e 66%)"></i>Daya 3 fasa L1-L2-L3 (terpasang)</span>
+          <span>Klik tuas MCB dan saklar langsung pada model</span>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <details class="jobsheet" id="jobsheet" open>
+            <summary>Lembar kerja</summary>
+            <div class="grid3" style="margin-top:10px" id="jobBody"></div>
+          </details>
+        </div>
+      </div>
+      <div class="side">
+        <div class="card">
+          <h3>Rangkai <span class="row"><button class="btn xs" id="bCheck">Periksa rangkaian</button></span></h3>
+          <div class="seg" style="margin-bottom:10px" role="group" aria-label="Fungsi klik terminal">
+            <button id="modeWire" aria-pressed="true">Klik = pasang kabel</button>
+            <button id="modeMeas" aria-pressed="false">Klik = titik ukur</button>
+          </div>
+          <div class="wirecol" id="wireCol">
+            <button data-c="L" aria-pressed="true"><i style="background:#6b3d1d"></i>Coklat (L)</button>
+            <button data-c="N" aria-pressed="false"><i style="background:#2463c9"></i>Biru (N)</button>
+            <button data-c="PE" aria-pressed="false"><i style="background:repeating-linear-gradient(90deg,#2e9a46 0 6px,#e8c51a 6px 12px)"></i>Hijau-kuning</button>
+          </div>
+          <div class="wire-list" id="wireList" style="margin-top:10px"></div>
+          <div class="row" style="margin-top:8px;justify-content:space-between">
+            <button class="btn xs danger" id="bClearWires">Lepas semua kabel</button>
+            <button class="btn xs" id="bHint">Petunjuk sambungan</button>
+          </div>
+          <ul class="check-list" id="checkOut"></ul>
+        </div>
+        <div class="card">
+          <h3>Kendali</h3>
+          <div class="row" style="margin-bottom:10px">
+            <button class="btn sm" id="bMcb">Naikkan MCB</button>
+            <button class="btn sm" id="bLoto" aria-pressed="false">Pasang LOTO</button>
+          </div>
+          <div class="row" id="swBtns" style="margin-bottom:10px"></div>
+          <div class="grid2">
+            <label class="field" id="ratingField">Rating MCB (kurva C)
+              <select id="selRating"><option value="2">C2 · 2 A</option><option value="4" selected>C4 · 4 A</option><option value="6">C6 · 6 A</option><option value="10">C10 · 10 A</option><option value="16">C16 · 16 A</option></select>
+            </label>
+            <label class="field" id="lampField">Jenis lampu
+              <select id="selLamp"><option value="9|0.9|LED 9 W">LED 9 W</option><option value="18|0.9|LED 18 W">LED 18 W</option><option value="60|1|Pijar 60 W">Pijar 60 W</option><option value="100|1|Pijar 100 W">Pijar 100 W</option></select>
+            </label>
+          </div>
+          <div id="extraCtl" style="display:grid;gap:8px;margin-top:8px"></div>
+        </div>
+        <div class="card">
+          <h3>Alat Ukur</h3>
+          <div class="tabs" role="tablist" id="insTabs">
+            <button role="tab" aria-selected="true" data-ins="mm">Multimeter</button>
+            <button role="tab" aria-selected="false" data-ins="tp">Test pen</button>
+            <button role="tab" aria-selected="false" data-ins="ta">Tang ampere</button>
+            <button role="tab" aria-selected="false" data-ins="mg">Megger</button>
+          </div>
+          <div id="insBody"></div>
+          <div class="readout" style="margin-top:10px">
+            <div class="lcd" id="lcd">0.0<small>V~</small></div>
+            <div class="neon" id="neon" hidden><i></i><span id="neonTxt">Tidak menyala</span></div>
+            <p id="readNote">Pilih titik ukur.</p>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Misi <span class="pill" id="misCount">0/0</span></h3>
+          <ol class="missions" id="missions"></ol>
+        </div>
+        <div class="card">
+          <h3>Catatan praktik</h3>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KUIS -->
+<section class="page" id="page-kuis" hidden>
+  <div class="wrap">
+    <div class="page-head"><div><p class="eyebrow">Tahap 3 · Merefleksi</p><h1>Kuis Diagnostik</h1><p>Soal disusun dari materi Toolkit dan Praktikum. Setiap jawaban langsung diberi pembahasan, dan nilaimu terkirim ke guru.</p></div></div>
+    <div class="card quiz-wrap" id="quizCard" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- REFLEKSI -->
+<section class="page" id="page-refleksi" hidden>
+  <div class="wrap">
+    <div class="page-head"><div><p class="eyebrow">Tahap 3 · Merefleksi</p><h1>Jurnal Refleksi</h1><p>Tuliskan pengalamanmu dengan kalimatmu sendiri, minimal satu kalimat untuk tiap pertanyaan. Jurnal tersimpan otomatis dan dapat dibaca guru.</p></div></div>
+    <div class="card" style="max-width:820px;display:grid;gap:14px">
+      <label class="field">Berkesadaran: Tindakan apa di praktikum yang paling berisiko jika dilakukan pada instalasi sungguhan? Mengapa?<textarea id="rf1" rows="4"></textarea></label>
+      <label class="field">Bermakna: Di mana kamu menemui MCB, saklar tukar, atau stop kontak di rumah? Apa yang akan kamu periksa sekarang?<textarea id="rf2" rows="4"></textarea></label>
+      <label class="field">Menggembirakan: Bagian mana yang paling seru, dan apa yang masih membuatmu penasaran?<textarea id="rf3" rows="4"></textarea></label>
+      <p class="muted small" id="reflNote">Tersimpan otomatis</p>
+    </div>
+  </div>
+</section>
+
+<!-- K3 -->
+<section class="page" id="page-k3" hidden>
+  <div class="wrap">
+    <div class="hazard" aria-hidden="true"></div>
+    <div class="page-head" style="margin-top:22px"><div><p class="eyebrow">Keselamatan dan Kesehatan Kerja</p><h1>Prosedur LOTO</h1><p>Lock Out Tag Out memastikan instalasi tidak dapat dinyalakan orang lain saat kamu bekerja. Di semua praktikum, tuas MCB terkunci selama LOTO terpasang. Merangkai kabel saat bertegangan dicatat sebagai pelanggaran.</p></div></div>
+    <div class="k3-grid">
+      <div class="k3-step"><span class="n">LANGKAH 1</span><b>Matikan</b><p>Turunkan MCB yang memasok rangkaian yang akan dikerjakan.</p></div>
+      <div class="k3-step"><span class="n">LANGKAH 2</span><b>Kunci &amp; Label</b><p>Pasang gembok pada tuas MCB dan gantung label berisi nama, waktu, dan pekerjaan.</p></div>
+      <div class="k3-step"><span class="n">LANGKAH 3</span><b>Verifikasi</b><p>Uji test pen di sumber yang hidup, lalu pastikan titik kerja 0 V dengan multimeter.</p></div>
+      <div class="k3-step"><span class="n">LANGKAH 4</span><b>Bekerja</b><p>Gunakan alat berisolasi VDE 1000 V, sepatu isolasi, dan sarung tangan karet yang sudah diperiksa.</p></div>
+    </div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><h3>Pelanggaran yang dicatat</h3><ul style="margin:0;padding-left:18px;display:grid;gap:4px;font-size:15px"><li>Memasang atau melepas kabel saat MCB ON</li><li>Mengukur Ω atau memakai megger pada rangkaian bertegangan</li><li>Saklar dipasang pada jalur netral</li><li>Warna kabel tidak sesuai PUIL</li></ul></div>
+      <div class="card"><h3>Warna kabel PUIL</h3><ul style="margin:0;padding-left:18px;display:grid;gap:4px;font-size:15px"><li>Fasa (L): coklat, hitam, atau abu-abu</li><li>Netral (N): biru</li><li>Pentanahan (PE): hijau-kuning</li></ul></div>
+      <div class="card"><h3>Batas berbahaya</h3><p style="font-size:15px">Arus 30 mA yang melewati jantung dapat berakibat fatal. Karena itu instalasi rumah dilindungi RCBO/ELCB 30 mA selain MCB, dan pentanahan wajib untuk peralatan berbodi logam.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- NILAI (GURU) -->
+<section class="page" id="page-nilai" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <div><p class="eyebrow">Mode Guru</p><h1>Nilai Siswa</h1><p>Data diperbarui langsung saat siswa belajar. Klik baris untuk melihat rincian praktikum, jawaban kuis, dan jurnal refleksi.</p></div>
+      <div class="row"><button class="btn" id="bBobot">Atur bobot</button><button class="btn" id="bCopyCsv">Salin tabel</button><button class="btn primary" id="bCsv">Unduh CSV</button></div>
+    </div>
+    <div class="stats" id="nilaiStats"></div>
+    <div class="row" style="margin-bottom:12px">
+      <input class="search" id="nlSearch" placeholder="Cari nama siswa…" style="max-width:280px">
+      <select class="search" id="nlFase" style="max-width:160px"><option value="">Semua fase</option><option value="E">Fase E</option><option value="F">Fase F</option></select>
+      <select class="search" id="nlKelas" style="max-width:200px"><option value="">Semua kelas</option></select>
+    </div>
+    <div class="tbl-wrap"><table class="tbl"><thead id="nlHead"></thead><tbody id="nlBody"></tbody></table></div>
+  </div>
+</section>
+
+<!-- MATERI (GURU) -->
+<section class="page" id="page-materi" hidden>
+  <div class="wrap">
+    <div class="page-head">
+      <div><p class="eyebrow">Mode Guru</p><h1>Kelola Materi &amp; Soal</h1><p>Hanya guru yang dapat menambah, mengubah, atau menyembunyikan materi dan soal. Perubahan langsung terlihat di perangkat semua siswa.</p></div>
+      <div class="row"><button class="btn primary" id="bAddMat">+ Materi alat</button><button class="btn primary" id="bAddSoal">+ Soal kuis</button></div>
+    </div>
+    <h2 style="font-size:26px;text-transform:uppercase;margin-bottom:10px">Materi Toolkit</h2>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Materi</th><th>Kategori</th><th>Model 3D</th><th>Status</th><th></th></tr></thead><tbody id="mtBody"></tbody></table></div>
+    <h2 style="font-size:26px;text-transform:uppercase;margin:28px 0 10px">Bank Soal Kuis</h2>
+    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Soal</th><th>Kunci</th><th>Status</th><th></th></tr></thead><tbody id="sqBody"></tbody></table></div>
+    <h2 style="font-size:26px;text-transform:uppercase;margin:28px 0 10px">Identitas Karya</h2>
+    <div class="card idn"><dl id="idnEdit"></dl><div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn primary" id="bSaveIdn">Simpan identitas</button></div></div>
+  </div>
+</section>
+
+<!-- TENTANG -->
+<section class="page" id="page-tentang" hidden>
+  <div class="wrap">
+    <div class="page-head"><div><p class="eyebrow">Karya Inovasi Pembelajaran</p><h1>Tentang Karya</h1></div></div>
+    <div class="grid2" style="gap:16px;align-items:start">
+      <div class="card idn"><dl id="idnView"></dl></div>
+      <div class="card">
+        <h3>Keunggulan Inovasi</h3>
+        <ul class="keung">
+          <li><b>3D</b><span>15 model alat interaktif lengkap dengan label bagian dan peragaan cara kerja, berjalan langsung di peramban HP siswa.</span></li>
+          <li><b>FASE F</b><span>Tiga praktikum kendali motor 3 fasa: DOL dengan pengunci, putar kanan-kiri dengan interlock, dan bintang-segitiga otomatis dengan TDR. Tegangan dihitung dengan fasor 400/230 V dan arus start motor ikut disimulasikan.</span></li>
+          <li><b>RANGKAI</b><span>Siswa memasang kabel sendiri di papan 3D. Rangkaian diperiksa otomatis meliputi fungsi, warna kabel PUIL, posisi saklar di fasa, dan hubung singkat.</span></li>
+          <li><b>SIM</b><span>Simulasi memakai analisis simpul (hukum Kirchhoff), sehingga lampu seri meredup, MCB kurva C trip termal dan magnetik, dan megger membaca kondisi isolasi.</span></li>
+          <li><b>K3</b><span>Kesalahan berbahaya dapat dialami tanpa risiko dan dicatat sebagai pelanggaran yang memengaruhi nilai.</span></li>
+          <li><b>PM</b><span>Alur Memahami → Mengaplikasi → Merefleksi mewujudkan prinsip berkesadaran, bermakna, dan menggembirakan.</span></li>
+          <li><b>DATA</b><span>Login per siswa dan database kelas memberi guru rekap nilai langsung yang dapat diunduh sebagai CSV.</span></li>
+          <li><b>GURU</b><span>Guru dapat menambah materi alat dan soal kuis tanpa menyentuh kode.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap row" style="justify-content:space-between">
+  <span><b>EduKelistrikan</b> · Media pembelajaran Teknik Instalasi Tenaga Listrik</span>
+  <span class="mono" style="font-size:12px">Acuan: PUIL 2011 · 230 V / 50 Hz · MCB kurva C</span>
+</div></footer>
+<div id="dlgRoot"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="app.js" defer></script>
+</body>
+</html>
