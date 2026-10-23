@@ -805,7 +805,20 @@ function generic(shape,color,name){
   lab.position.set(0,0,shape==="silinder"?.61:.76);g.add(lab);
   return g;
 }
+function fotoModel(t){
+  const g=new T.Group();
+  const ar=(t.fw&&t.fh)?t.fw/t.fh:4/3;
+  let w=2.2,h=2.2;if(ar>=1)h=w/ar;else w=h*ar;
+  const frame=roundedBox(w+.14,h+.14,.07,.04,MAT.white);frame.position.y=h/2+.2;g.add(frame);
+  const base=roundedBox(Math.min(w,1.4),.12,.5,.04,MAT.dark);base.position.set(0,.06,-.1);g.add(base);
+  const tex=new T.TextureLoader().load(t.foto);tex.encoding=T.sRGBEncoding;tex.anisotropy=4;
+  const pm=new T.MeshBasicMaterial({map:tex,toneMapped:false});
+  const f=new T.Mesh(new T.PlaneGeometry(w,h),pm);f.position.set(0,h/2+.2,.037);g.add(f);
+  const b=new T.Mesh(new T.PlaneGeometry(w,h),pm);b.position.set(0,h/2+.2,-.037);b.rotation.y=Math.PI;g.add(b);
+  return g;
+}
 function buildModel(t){
+  if(t.foto)return fotoModel(t);
   switch(t.model){
     case"tangKombinasi":case"tangPotong":case"tangKupas":return pliers(t.model);
     case"obeng":return screwdrivers();case"multimeter":return multimeter();case"tespen":return tespen();
@@ -2033,16 +2046,38 @@ function openMatForm(t){
     <label class="field" style="grid-column:1/-1">Pertanyaan pemantik<input id="f_pem" maxlength="240" value="${esc(t.pemantik||"")}" placeholder="Pertanyaan yang memancing rasa ingin tahu siswa"></label>
     <label class="field">Langkah penggunaan (satu per baris)<textarea id="f_steps">${esc((t.steps||[]).join("\n"))}</textarea></label>
     <label class="field">Perhatian K3 (satu per baris)<textarea id="f_safe">${esc((t.safety||[]).join("\n"))}</textarea></label>
+    <div class="field" style="grid-column:1/-1">Foto alat (opsional)
+      <div class="row" style="gap:12px;align-items:center;flex-wrap:wrap">
+        <img id="f_prev" alt="Pratinjau foto" style="width:96px;height:96px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);${t.foto?"":"display:none"}" ${t.foto?`src="${esc(t.foto)}"`:""}>
+        <div style="display:grid;gap:6px"><input id="f_foto" type="file" accept="image/*"><button type="button" class="btn sm" id="f_fotoDel" ${t.foto?"":"hidden"}>Hapus foto</button>
+        <span class="muted small">Jika foto diunggah, siswa melihat foto ini (bisa diputar 360°) menggantikan model 3D. Foto otomatis dikecilkan.</span></div>
+      </div>
+    </div>
     <p class="err" id="f_err" style="grid-column:1/-1"></p>
     <div class="row" style="grid-column:1/-1;justify-content:flex-end"><button type="button" class="btn" id="fCancel">Batal</button><button class="btn primary" type="submit">${isNew?"Tambahkan":"Simpan perubahan"}</button></div>
    </form>`);
   $("#fCancel").onclick=closeDlg;
+  let foto=t.foto||"",fw=t.fw||0,fh=t.fh||0;
+  const showPrev=()=>{const im=$("#f_prev");if(foto){im.src=foto;im.style.display=""}else{im.removeAttribute("src");im.style.display="none"}$("#f_fotoDel").hidden=!foto};
+  $("#f_fotoDel").onclick=()=>{foto="";fw=fh=0;$("#f_foto").value="";showPrev()};
+  $("#f_foto").onchange=e=>{const file=e.target.files[0];if(!file)return;
+    if(!/^image\//.test(file.type)){$("#f_err").textContent="File harus berupa gambar.";return}
+    const rd=new FileReader();
+    rd.onload=()=>{const im=new Image();
+      im.onload=()=>{const M=900,k=Math.min(1,M/Math.max(im.width,im.height));const w=Math.round(im.width*k),h=Math.round(im.height*k);
+        const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);
+        let q=.82,d=c.toDataURL("image/jpeg",q);while(d.length>350000&&q>.4){q-=.1;d=c.toDataURL("image/jpeg",q)}
+        foto=d;fw=w;fh=h;$("#f_err").textContent="";showPrev()};
+      im.onerror=()=>{$("#f_err").textContent="Gambar tidak dapat dibaca."};
+      im.src=rd.result};
+    rd.readAsDataURL(file)};
   $("#mf").onsubmit=e=>{e.preventDefault();
     const name=$("#f_name").value.trim(),desc=$("#f_desc").value.trim();
     if(!name||!desc){$("#f_err").textContent="Nama dan fungsi utama wajib diisi.";return}
     const lines=s=>s.split("\n").map(x=>x.trim()).filter(Boolean).slice(0,12);
     const id=isNew?"m-"+Date.now().toString(36):t.id;
     const data={id,fase:$("#f_fase").value,name,en:$("#f_en").value.trim(),cat:$("#f_cat").value,model:$("#f_model").value,color:$("#f_color").value,desc,pemantik:$("#f_pem").value.trim(),steps:lines($("#f_steps").value),safety:lines($("#f_safe").value),hapus:!!t.hapus};
+    if(foto){data.foto=foto;data.fw=fw;data.fh=fh}
     guruWrite("materi/"+id,data,isNew?"Materi ditambahkan untuk semua siswa":"Perubahan materi disimpan").then(closeDlg).catch(()=>{});
   };
 }
